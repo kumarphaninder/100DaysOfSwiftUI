@@ -15,14 +15,17 @@ struct ContentView: View {
     
     let tipPercentages = [10, 15, 20, 25, 0]
     
-    var totalPerPerson: Double {
-        let peopleCount = Double(numberOfPeople + 2)
+    var totalAmount: Double {
         let tipSelection = Double(tipPercentage)
         
         let tipValue = checkAmount / 100 * tipSelection
         let grandTotal = checkAmount + tipValue
-        let amountPerPerson = grandTotal / peopleCount
-        
+        return grandTotal
+    }
+    
+    var totalPerPerson: Double {
+        let peopleCount = Double(numberOfPeople + 2)
+        let amountPerPerson = totalAmount / peopleCount
         return amountPerPerson
     }
     
@@ -50,22 +53,37 @@ struct ContentView: View {
                 }
                 
                 Section {
-                    Picker("Tip percentage", selection: $tipPercentage) {
-                        ForEach(tipPercentages, id: \.self) {
-                            Text($0, format: .percent)
+                    if #available(iOS 16.0, *) {
+                        Picker("Tip percentage", selection: $tipPercentage) {
+                            ForEach(0..<101) {
+                                Text($0, format: .percent)
+                            }
                         }
+                        .pickerStyle(.navigationLink)
+                    } else {
+                        Picker("Tip percentage", selection: $tipPercentage) {
+                            ForEach(tipPercentages, id: \.self) {
+                                Text($0, format: .percent)
+                            }
+                        }
+                        .pickerStyle(.segmented)
                     }
-                    .pickerStyle(.segmented)
                 } header: {
                     Text("How much tip do you want to leave?")
                 }
                 
+                Section {
+                    Text(totalAmount, format: .currency(code: currencyCode))
+                } header: {
+                    Text("Total amount")
+                }
                 
                 Section {
                     Text(totalPerPerson, format: .currency(code: currencyCode))
                 } header: {
-                    Text("Per person contribution")
+                    Text("Amount per person")
                 }
+                
             }
             .navigationTitle("We Split")
             .toolbar {
